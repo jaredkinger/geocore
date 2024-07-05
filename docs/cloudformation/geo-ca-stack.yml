@@ -100,6 +100,11 @@ Resources:
             Statement:
               - Effect: 'Allow'
                 Action:
+                  - 'codestar-connections:UseConnection'
+                Resource:
+                    - '*'
+              - Effect: 'Allow'
+                Action:
                   - 's3:PutObject'
                   - 's3:GetObject'
                   - 's3:GetObjectVersion'
@@ -112,7 +117,7 @@ Resources:
                 Action:
                   - 'lambda:InvokeFunction'
                 Resource:
-                  - Fn::Sub: arn:aws:lambda:*
+                  - 'arn:aws:lambda:*:*:function:*'
 
 
   LambdaExecutionRole:
