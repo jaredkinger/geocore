@@ -20,6 +20,9 @@ Parameters:
   SecHeadersLambdaEdgeArn:
     Type: String
     Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+  CodeStarSourceConnectionArn:
+    Type: String
+    Description: ARN of the CodeStarSourceConnection for the GitHub App connection
 
 Conditions:
   IsProd: !Equals [prod, !Ref Environment]
@@ -206,27 +209,28 @@ Resources:
             - Name: Source
               InputArtifacts: []
               ActionTypeId:
-                Version: '1'
-                Owner: ThirdParty
                 Category: Source
-                Provider: GitHub
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: 1
               OutputArtifacts:
                 - Name: SourceCode
               RunOrder: 1
               Configuration:
-                OAuthToken: '{{resolve:secretsmanager:/webpresence/github/key}}'
-                Owner: Canadian-Geospatial-Platform
-                Repo: geo.ca
-                Branch: !Ref Environment
-                PollForSourceChanges: 'true'
-        - Name: Approval
-          Actions:
-            - Name: Approval
-              ActionTypeId:
-                Category: Approval
-                Owner: AWS
-                Version: 1
-                Provider: Manual
+                ConnectionArn: !Ref CodeStarSourceConnectionArn
+                FullRepositoryId: 'Canadian-Geospatial-Platform/geo.ca'
+                BranchName: !Ref Environment
+        - !If
+          - IsProd
+          - Name: Approval
+            Actions:
+              - Name: Approval
+                ActionTypeId:
+                  Category: Approval
+                  Owner: AWS
+                  Version: 1
+                  Provider: Manual
+          - !Ref AWS::NoValue
         - Name: Deploy
           Actions:
             - Name: Deploy
